@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PROGRAM, STRETCHES, WorkoutDay } from './data/program';
-import { useWorkoutHistory, WorkoutLog } from './hooks/useWorkoutHistory';
+import { useWorkoutHistory, WorkoutLog, ExerciseLog } from './hooks/useWorkoutHistory';
 import { Play, ChevronRight, Info, CheckCircle, RotateCcw, History, ArrowLeft, Plus, Minus, Dumbbell, Timer as TimerIcon, X } from 'lucide-react';
+
+const SESSION_KEY = 'active_session';
+
+type SetLog = { weight: number; reps: number; completed: boolean };
+
+type SessionState = {
+  dayId: string;
+  currentExerciseIndex: number;
+  logs: Record<string, SetLog[]>;
+};
 
 // --- Components ---
 
 function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number, type?: 'rest' | 'interval' }) {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState<'work' | 'rest'>('work'); 
-  
+  const [mode, setMode] = useState<'work' | 'rest'>('work');
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isActive && seconds > 0) {
@@ -26,7 +36,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   }, [isActive, seconds]);
 
   const toggle = () => setIsActive(!isActive);
-  
+
   const reset = () => {
     setIsActive(false);
     setSeconds(initialSeconds);
@@ -36,8 +46,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   const setIntervalMode = (newMode: 'work' | 'rest') => {
     setIsActive(false);
     setMode(newMode);
-    setSeconds(30); // Hardcoded 30s as per user request for intervals
-    // Optional: auto-start? Let's keep it manual for control.
+    setSeconds(30);
   };
 
   const formatTime = (s: number) => {
@@ -60,13 +69,13 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
             </div>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
-          <button 
-            onClick={toggle} 
+          <button
+            onClick={toggle}
             className={`px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-              isActive 
-                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+              isActive
+                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
                 : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/20'
             }`}
           >
@@ -80,7 +89,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
 
       {type === 'interval' && (
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
-          <button 
+          <button
             onClick={() => setIntervalMode('work')}
             className={`py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               mode === 'work' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
@@ -88,7 +97,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
           >
             30s Work
           </button>
-          <button 
+          <button
             onClick={() => setIntervalMode('rest')}
             className={`py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
               mode === 'rest' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
@@ -105,7 +114,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
 function StretchesModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -132,7 +141,7 @@ function StretchesModal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           </section>
-          
+
           <section>
             <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3">Home (Daily/Off-Days)</h4>
             <div className="space-y-3">
@@ -160,15 +169,15 @@ function StretchesModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Home({ 
-  onStartWorkout, 
-  history 
-}: { 
+function Home({
+  onStartWorkout,
+  history
+}: {
   onStartWorkout: (day: WorkoutDay) => void,
   history: WorkoutLog[]
 }) {
   const [showStretches, setShowStretches] = useState(false);
-  
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning! Let's get moving.";
@@ -237,7 +246,7 @@ function Home({
         )}
       </section>
 
-      <button 
+      <button
         onClick={() => setShowStretches(true)}
         className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-medium rounded-xl shadow-sm hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
       >
@@ -252,72 +261,64 @@ function Home({
   );
 }
 
-function ActiveSession({ 
-  day, 
-  onFinish, 
+function ActiveSession({
+  day,
+  initialSession,
+  onFinish,
   onCancel,
-  getLastLog 
-}: { 
-  day: WorkoutDay, 
-  onFinish: (log: WorkoutLog) => void, 
-  onCancel: () => void,
-  getLastLog: (exerciseId: string) => any
+  getLastLog,
+  getExerciseDefaults,
+  saveExerciseDefault,
+}: {
+  day: WorkoutDay;
+  initialSession: SessionState | null;
+  onFinish: (log: WorkoutLog) => void;
+  onCancel: () => void;
+  getLastLog: (exerciseId: string) => ExerciseLog | null;
+  getExerciseDefaults: (exerciseId: string) => { weight: number; reps: number }[] | null;
+  saveExerciseDefault: (exerciseId: string, setIndex: number, weight: number, reps: number) => void;
 }) {
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [logs, setLogs] = useState<Record<string, { weight: number, reps: number, completed: boolean }[]>>({});
-  
-  // Initialize logs for current exercise if not exists
-  const currentExercise = day.exercises[currentExerciseIndex];
-  
-  // Helper to get current set data or default
-  const getSetData = (exId: string, setIndex: number) => {
-    if (!logs[exId]) {
-      // Try to pre-fill from history
-      const lastLog = getLastLog(exId);
-      const defaultWeight = lastLog?.sets[0]?.weight || 30; // Default 30lbs if no history
-      
-      // Initialize all sets for this exercise
-      const initialSets = Array(currentExercise.sets).fill(0).map(() => ({
-        weight: defaultWeight,
-        reps: parseInt(currentExercise.reps.split('-')[0]) || 10,
-        completed: false
-      }));
-      
-      // We can't update state during render, so we return the initial structure
-      // and let the effect below handle the state update if needed, 
-      // OR just handle it in the UI rendering and init on interaction.
-      // Better: return defaults.
-      return initialSets[setIndex];
-    }
-    return logs[exId][setIndex];
-  };
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(
+    initialSession?.currentExerciseIndex ?? 0
+  );
+  const [logs, setLogs] = useState<Record<string, SetLog[]>>(
+    initialSession?.logs ?? {}
+  );
 
-  // Effect to initialize state for new exercise to avoid undefined checks everywhere
+  const currentExercise = day.exercises[currentExerciseIndex];
+
+  // Persist entire session state to localStorage on every change
+  useEffect(() => {
+    const session: SessionState = { dayId: day.id, currentExerciseIndex, logs };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  }, [day.id, currentExerciseIndex, logs]);
+
+  // Initialize logs for a new exercise, preferring saved defaults then history
   useEffect(() => {
     if (!logs[currentExercise.id]) {
+      const defaults = getExerciseDefaults(currentExercise.id);
       const lastLog = getLastLog(currentExercise.id);
-      const defaultWeight = lastLog?.sets?.[0]?.weight || (currentExercise.name.includes('DB') ? 20 : 40);
-      
+      const fallbackWeight = currentExercise.name.includes('DB') ? 20 : 40;
+
       setLogs(prev => ({
         ...prev,
         [currentExercise.id]: Array(currentExercise.sets).fill(0).map((_, i) => ({
-          weight: lastLog?.sets?.[i]?.weight || defaultWeight,
-          reps: lastLog?.sets?.[i]?.reps || parseInt(currentExercise.reps.split('-')[0]) || 10,
-          completed: false
-        }))
+          weight: defaults?.[i]?.weight ?? lastLog?.sets?.[i]?.weight ?? fallbackWeight,
+          reps: defaults?.[i]?.reps ?? lastLog?.sets?.[i]?.reps ?? (parseInt(currentExercise.reps.split('-')[0]) || 10),
+          completed: false,
+        })),
       }));
     }
-  }, [currentExercise.id, getLastLog, logs]);
+  }, [currentExercise, getExerciseDefaults, getLastLog, logs]);
 
   const updateSet = (setIndex: number, field: 'weight' | 'reps', delta: number) => {
     setLogs(prev => {
       const exLogs = [...(prev[currentExercise.id] || [])];
-      if (!exLogs[setIndex]) return prev; // Should be inited by effect
-      
-      const currentVal = exLogs[setIndex][field];
-      const newVal = Math.max(0, currentVal + delta);
-      
-      exLogs[setIndex] = { ...exLogs[setIndex], [field]: newVal };
+      if (!exLogs[setIndex]) return prev;
+      const updatedSet = { ...exLogs[setIndex], [field]: Math.max(0, exLogs[setIndex][field] + delta) };
+      exLogs[setIndex] = updatedSet;
+      // Persist per-set defaults so future sessions pre-fill from these values
+      saveExerciseDefault(currentExercise.id, setIndex, updatedSet.weight, updatedSet.reps);
       return { ...prev, [currentExercise.id]: exLogs };
     });
   };
@@ -334,21 +335,20 @@ function ActiveSession({
     if (currentExerciseIndex < day.exercises.length - 1) {
       setCurrentExerciseIndex(prev => prev + 1);
     } else {
-      // Finish workout
       const workoutLog: WorkoutLog = {
         id: crypto.randomUUID(),
         date: new Date().toISOString(),
         programId: day.id,
         exercises: Object.entries(logs).map(([exId, sets]) => ({
           exerciseId: exId,
-          sets: sets as { weight: number; reps: number; completed: boolean }[]
-        }))
+          sets,
+        })),
       };
       onFinish(workoutLog);
     }
   };
 
-  const progress = ((currentExerciseIndex) / day.exercises.length) * 100;
+  const progress = (currentExerciseIndex / day.exercises.length) * 100;
   const currentLog = logs[currentExercise.id];
 
   return (
@@ -360,8 +360,8 @@ function ActiveSession({
         </button>
         <div className="flex-1 mx-4">
           <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-indigo-600" 
+            <motion.div
+              className="h-full bg-indigo-600"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
             />
@@ -381,28 +381,28 @@ function ActiveSession({
               {currentExercise.category}
             </span>
           </div>
-          
+
           {/* Tips Card */}
           <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-             <div className="flex items-start gap-3">
-               <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
-               <div className="space-y-1">
-                 <p className="text-indigo-900 font-medium text-sm">
-                   Target: <span className="font-bold">{currentExercise.reps} reps</span>
-                 </p>
-                 {currentExercise.notes && (
-                   <p className="text-indigo-700 text-sm leading-relaxed">
-                     {currentExercise.notes}
-                   </p>
-                 )}
-               </div>
-             </div>
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-indigo-900 font-medium text-sm">
+                  Target: <span className="font-bold">{currentExercise.reps} reps</span>
+                </p>
+                {currentExercise.notes && (
+                  <p className="text-indigo-700 text-sm leading-relaxed">
+                    {currentExercise.notes}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Timer for Cardio or Rest */}
-          <Timer 
-            initialSeconds={currentExercise.category === 'cardio' ? 30 : 60} 
-            type={currentExercise.category === 'cardio' ? 'interval' : 'rest'} 
+          <Timer
+            initialSeconds={currentExercise.category === 'cardio' ? 30 : 60}
+            type={currentExercise.category === 'cardio' ? 'interval' : 'rest'}
           />
 
           {/* History Context */}
@@ -417,24 +417,24 @@ function ActiveSession({
         {/* Sets Tracker */}
         <div className="space-y-3">
           {currentLog?.map((set, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               className={`p-4 rounded-2xl border transition-all ${
-                set.completed 
-                  ? 'bg-emerald-50 border-emerald-200' 
+                set.completed
+                  ? 'bg-emerald-50 border-emerald-200'
                   : 'bg-white border-slate-200'
               }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-bold text-slate-400">SET {idx + 1}</span>
-                <button 
+                <button
                   onClick={() => toggleComplete(idx)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    set.completed 
-                      ? 'bg-emerald-500 text-white' 
+                    set.completed
+                      ? 'bg-emerald-500 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -448,14 +448,14 @@ function ActiveSession({
                 <div className="space-y-1">
                   <label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Lbs</label>
                   <div className="flex items-center justify-between bg-slate-50 rounded-xl p-1">
-                    <button 
+                    <button
                       onClick={() => updateSet(idx, 'weight', -5)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="font-mono font-semibold text-lg text-slate-900">{set.weight}</span>
-                    <button 
+                    <button
                       onClick={() => updateSet(idx, 'weight', 5)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
                     >
@@ -468,14 +468,14 @@ function ActiveSession({
                 <div className="space-y-1">
                   <label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Reps</label>
                   <div className="flex items-center justify-between bg-slate-50 rounded-xl p-1">
-                    <button 
+                    <button
                       onClick={() => updateSet(idx, 'reps', -1)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="font-mono font-semibold text-lg text-slate-900">{set.reps}</span>
-                    <button 
+                    <button
                       onClick={() => updateSet(idx, 'reps', 1)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
                     >
@@ -502,16 +502,38 @@ function ActiveSession({
     </div>
   );
 }
+
 export default function App() {
-  const { history, saveWorkout, getLastLogForExercise } = useWorkoutHistory();
+  const { history, saveWorkout, getLastLogForExercise, getExerciseDefaults, saveExerciseDefault } = useWorkoutHistory();
   const [activeDay, setActiveDay] = useState<WorkoutDay | null>(null);
+  const [savedSession, setSavedSession] = useState<SessionState | null>(null);
+
+  // On mount, restore any in-progress session
+  useEffect(() => {
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (stored) {
+      const session: SessionState = JSON.parse(stored);
+      const day = PROGRAM.find(d => d.id === session.dayId);
+      if (day) {
+        setActiveDay(day);
+        setSavedSession(session);
+      }
+    }
+  }, []);
 
   const handleStart = (day: WorkoutDay) => {
+    setSavedSession(null);
     setActiveDay(day);
   };
 
   const handleFinish = (log: WorkoutLog) => {
+    localStorage.removeItem(SESSION_KEY);
     saveWorkout(log);
+    setActiveDay(null);
+  };
+
+  const handleCancel = () => {
+    localStorage.removeItem(SESSION_KEY);
     setActiveDay(null);
   };
 
@@ -519,22 +541,25 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <AnimatePresence mode="wait">
         {activeDay ? (
-          <motion.div 
+          <motion.div
             key="session"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="h-full"
           >
-            <ActiveSession 
-              day={activeDay} 
-              onFinish={handleFinish} 
-              onCancel={() => setActiveDay(null)}
+            <ActiveSession
+              day={activeDay}
+              initialSession={savedSession}
+              onFinish={handleFinish}
+              onCancel={handleCancel}
               getLastLog={getLastLogForExercise}
+              getExerciseDefaults={getExerciseDefaults}
+              saveExerciseDefault={saveExerciseDefault}
             />
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             key="home"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
