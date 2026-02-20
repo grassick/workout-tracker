@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PROGRAM, STRETCHES, WorkoutDay, Exercise } from './data/program';
+import { PROGRAM, STRETCHES, WorkoutDay } from './data/program';
 import { useWorkoutHistory, WorkoutLog } from './hooks/useWorkoutHistory';
-import { Play, Calendar, ChevronRight, Info, CheckCircle, RotateCcw, History, ArrowLeft, Plus, Minus, Dumbbell, Timer as TimerIcon, X } from 'lucide-react';
+import { Play, ChevronRight, Info, CheckCircle, RotateCcw, History, ArrowLeft, Plus, Minus, Dumbbell, Timer as TimerIcon, X } from 'lucide-react';
 
 // --- Components ---
 
@@ -12,7 +12,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   const [mode, setMode] = useState<'work' | 'rest'>('work'); 
   
   useEffect(() => {
-    let interval: any = null;
+    let interval: NodeJS.Timeout | null = null;
     if (isActive && seconds > 0) {
       interval = setInterval(() => {
         setSeconds(s => s - 1);
@@ -20,7 +20,9 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
     } else if (seconds === 0) {
       setIsActive(false);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isActive, seconds]);
 
   const toggle = () => setIsActive(!isActive);

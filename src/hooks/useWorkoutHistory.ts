@@ -31,7 +31,6 @@ export function useWorkoutHistory() {
   };
 
   const getLastLogForExercise = (exerciseId: string) => {
-    // Find the most recent log containing this exercise
     for (const log of history) {
       const exLog = log.exercises.find((e) => e.exerciseId === exerciseId);
       if (exLog) return exLog;
