@@ -56,10 +56,10 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   };
 
   return (
-    <div className="bg-slate-900 text-white rounded-xl p-4 shadow-lg space-y-4">
+    <div className="bg-slate-800 border border-slate-700 text-white rounded-xl p-4 shadow-lg space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+          <div className={`p-2 rounded-full ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
             <TimerIcon className="w-5 h-5" />
           </div>
           <div>
@@ -76,7 +76,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
             className={`px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
               isActive
                 ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
-                : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/20'
+                : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/40'
             }`}
           >
             {isActive ? 'Pause' : 'Start'}
@@ -88,11 +88,11 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
       </div>
 
       {type === 'interval' && (
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700">
           <button
             onClick={() => setIntervalMode('work')}
             className={`py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-              mode === 'work' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              mode === 'work' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
             }`}
           >
             30s Work
@@ -100,7 +100,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
           <button
             onClick={() => setIntervalMode('rest')}
             className={`py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-              mode === 'rest' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              mode === 'rest' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
             }`}
           >
             30s Rest
@@ -113,37 +113,37 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
 
 function StretchesModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+        className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
       >
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-bold text-lg text-slate-900">Stretching Routine</h3>
-          <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <h3 className="font-bold text-lg text-slate-100">Stretching Routine</h3>
+          <button onClick={onClose} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:bg-slate-700 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="overflow-y-auto p-4 space-y-6">
           <section>
-            <h4 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-3">Gym (Between Sets)</h4>
+            <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-3">Gym (Between Sets)</h4>
             <div className="space-y-3">
               {STRETCHES.map((s, i) => (
-                <div key={i} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div key={i} className="bg-slate-800 p-3 rounded-xl border border-slate-700">
                   <div className="flex justify-between items-start">
-                    <span className="font-medium text-slate-900">{s.name}</span>
-                    <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-slate-200 text-slate-500">{s.duration}</span>
+                    <span className="font-medium text-slate-100">{s.name}</span>
+                    <span className="text-xs font-mono bg-slate-900 px-2 py-1 rounded border border-slate-700 text-slate-400">{s.duration}</span>
                   </div>
-                  <p className="text-sm text-slate-500 mt-1">When: {s.when}</p>
+                  <p className="text-sm text-slate-400 mt-1">When: {s.when}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section>
-            <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3">Home (Daily/Off-Days)</h4>
+            <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-3">Home (Daily/Off-Days)</h4>
             <div className="space-y-3">
               {[
                 { name: 'Lying hamstring stretch', duration: '60s/side', target: 'Hamstrings' },
@@ -153,12 +153,12 @@ function StretchesModal({ onClose }: { onClose: () => void }) {
                 { name: 'Doorway chest stretch', duration: '60s/side', target: 'Pecs' },
                 { name: 'Cat-cow', duration: '10 slow reps', target: 'Spine' },
               ].map((s, i) => (
-                <div key={i} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div key={i} className="bg-slate-800 p-3 rounded-xl border border-slate-700">
                   <div className="flex justify-between items-start">
-                    <span className="font-medium text-slate-900">{s.name}</span>
-                    <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-slate-200 text-slate-500">{s.duration}</span>
+                    <span className="font-medium text-slate-100">{s.name}</span>
+                    <span className="text-xs font-mono bg-slate-900 px-2 py-1 rounded border border-slate-700 text-slate-400">{s.duration}</span>
                   </div>
-                  <p className="text-sm text-slate-500 mt-1">Target: {s.target}</p>
+                  <p className="text-sm text-slate-400 mt-1">Target: {s.target}</p>
                 </div>
               ))}
             </div>
@@ -188,16 +188,16 @@ function Home({
   return (
     <div className="max-w-md mx-auto p-6 space-y-8 pb-24">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">My Gym Tracker</h1>
-        <p className="text-slate-500">{getGreeting()}</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-100">My Gym Tracker</h1>
+        <p className="text-slate-400">{getGreeting()}</p>
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-xl text-white shadow-lg mt-4">
           <p className="font-medium text-sm opacity-90">"Consistency is the key to progress. Even a small step forward is still a step."</p>
         </div>
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          <Dumbbell className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
+          <Dumbbell className="w-5 h-5 text-indigo-400" />
           Start Workout
         </h2>
         <div className="grid gap-3">
@@ -205,13 +205,13 @@ function Home({
             <button
               key={day.id}
               onClick={() => onStartWorkout(day)}
-              className="group relative flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition-all text-left"
+              className="group relative flex items-center justify-between p-4 bg-slate-900 rounded-2xl border border-slate-700 shadow-sm hover:border-indigo-500 hover:shadow-md transition-all text-left"
             >
               <div>
-                <h3 className="font-semibold text-slate-900">{day.title}</h3>
-                <p className="text-sm text-slate-500">{day.focus}</p>
+                <h3 className="font-semibold text-slate-100">{day.title}</h3>
+                <p className="text-sm text-slate-400">{day.focus}</p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-full bg-indigo-900/50 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                 <Play className="w-4 h-4 fill-current" />
               </div>
             </button>
@@ -220,12 +220,12 @@ function Home({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
           <History className="w-5 h-5 text-slate-500" />
           Recent History
         </h2>
         {history.length === 0 ? (
-          <div className="p-6 bg-slate-50 rounded-2xl text-center text-slate-400 text-sm">
+          <div className="p-6 bg-slate-900 rounded-2xl text-center text-slate-500 text-sm border border-slate-800">
             No workouts logged yet. Time to start!
           </div>
         ) : (
@@ -233,10 +233,10 @@ function Home({
             {history.slice(0, 3).map((log) => {
               const program = PROGRAM.find(p => p.id === log.programId);
               return (
-                <div key={log.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div key={log.id} className="p-4 bg-slate-900 rounded-2xl border border-slate-800 shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-slate-900">{program?.title || 'Unknown Workout'}</p>
-                    <p className="text-xs text-slate-400">{new Date(log.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                    <p className="font-medium text-slate-100">{program?.title || 'Unknown Workout'}</p>
+                    <p className="text-xs text-slate-500">{new Date(log.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
                   </div>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
@@ -248,7 +248,7 @@ function Home({
 
       <button
         onClick={() => setShowStretches(true)}
-        className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-medium rounded-xl shadow-sm hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-3 bg-slate-900 border border-slate-700 text-slate-300 font-medium rounded-xl shadow-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
       >
         <Info className="w-5 h-5" />
         View Stretching Routine
@@ -352,16 +352,16 @@ function ActiveSession({
   const currentLog = logs[currentExercise.id];
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-slate-950">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <button onClick={onCancel} className="p-2 -ml-2 text-slate-400 hover:text-slate-600">
+      <div className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <button onClick={onCancel} className="p-2 -ml-2 text-slate-500 hover:text-slate-200 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 mx-4">
-          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-indigo-600"
+              className="h-full bg-indigo-500"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
             />
@@ -376,22 +376,22 @@ function ActiveSession({
       <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-32">
         <div className="space-y-2">
           <div className="flex items-start justify-between">
-            <h2 className="text-2xl font-bold text-slate-900 leading-tight">{currentExercise.name}</h2>
-            <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md uppercase tracking-wide">
+            <h2 className="text-2xl font-bold text-slate-100 leading-tight">{currentExercise.name}</h2>
+            <span className="px-2 py-1 bg-slate-800 text-slate-400 text-xs font-medium rounded-md uppercase tracking-wide">
               {currentExercise.category}
             </span>
           </div>
 
           {/* Tips Card */}
-          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+          <div className="bg-slate-800 rounded-xl p-4 border border-indigo-500/30">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-indigo-900 font-medium text-sm">
-                  Target: <span className="font-bold">{currentExercise.reps} reps</span>
+                <p className="text-slate-200 font-medium text-sm">
+                  Target: <span className="font-bold text-indigo-400">{currentExercise.reps} reps</span>
                 </p>
                 {currentExercise.notes && (
-                  <p className="text-indigo-700 text-sm leading-relaxed">
+                  <p className="text-slate-400 text-sm leading-relaxed">
                     {currentExercise.notes}
                   </p>
                 )}
@@ -424,18 +424,18 @@ function ActiveSession({
               transition={{ delay: idx * 0.1 }}
               className={`p-4 rounded-2xl border transition-all ${
                 set.completed
-                  ? 'bg-emerald-50 border-emerald-200'
-                  : 'bg-white border-slate-200'
+                  ? 'bg-emerald-950 border-emerald-800'
+                  : 'bg-slate-900 border-slate-700'
               }`}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-slate-400">SET {idx + 1}</span>
+                <span className="text-sm font-bold text-slate-500">SET {idx + 1}</span>
                 <button
                   onClick={() => toggleComplete(idx)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     set.completed
                       ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
                 >
                   {set.completed ? 'Completed' : 'Mark Done'}
@@ -446,18 +446,18 @@ function ActiveSession({
               <div className="grid grid-cols-2 gap-4">
                 {/* Weight Control */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Lbs</label>
-                  <div className="flex items-center justify-between bg-slate-50 rounded-xl p-1">
+                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Lbs</label>
+                  <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
                     <button
                       onClick={() => updateSet(idx, 'weight', -5)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="font-mono font-semibold text-lg text-slate-900">{set.weight}</span>
+                    <span className="font-mono font-semibold text-lg text-slate-100">{set.weight}</span>
                     <button
                       onClick={() => updateSet(idx, 'weight', 5)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -466,18 +466,18 @@ function ActiveSession({
 
                 {/* Reps Control */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Reps</label>
-                  <div className="flex items-center justify-between bg-slate-50 rounded-xl p-1">
+                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Reps</label>
+                  <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
                     <button
                       onClick={() => updateSet(idx, 'reps', -1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="font-mono font-semibold text-lg text-slate-900">{set.reps}</span>
+                    <span className="font-mono font-semibold text-lg text-slate-100">{set.reps}</span>
                     <button
                       onClick={() => updateSet(idx, 'reps', 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-slate-600 active:scale-95 transition-transform"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -490,10 +490,10 @@ function ActiveSession({
       </div>
 
       {/* Footer Actions */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900 border-t border-slate-800">
         <button
           onClick={handleNext}
-          className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-950/50 transition-all flex items-center justify-center gap-2"
         >
           {currentExerciseIndex === day.exercises.length - 1 ? 'Finish Workout' : 'Next Exercise'}
           <ChevronRight className="w-5 h-5" />
@@ -538,7 +538,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-100">
       <AnimatePresence mode="wait">
         {activeDay ? (
           <motion.div
