@@ -421,76 +421,101 @@ function ActiveSession({
 
         {/* Sets Tracker */}
         <div className="space-y-3">
-          {currentLog?.map((set, idx) => (
+          {currentExercise.category === 'cardio' ? (
             <motion.div
-              key={idx}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.12, delay: idx * 0.04 }}
+              transition={{ duration: 0.12 }}
               className={`p-4 rounded-2xl border transition-all ${
-                set.completed
+                currentLog?.[0]?.completed
                   ? 'bg-emerald-950 border-emerald-800'
                   : 'bg-slate-900 border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-slate-500">SET {idx + 1}</span>
-                <button
-                  onClick={() => toggleComplete(idx)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    set.completed
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
-                >
-                  {set.completed ? 'Completed' : 'Mark Done'}
-                  {set.completed && <CheckCircle className="w-4 h-4" />}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Weight Control */}
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Lbs</label>
-                  <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
-                    <button
-                      onClick={() => updateSet(idx, 'weight', -5)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="font-mono font-semibold text-lg text-slate-100">{set.weight}</span>
-                    <button
-                      onClick={() => updateSet(idx, 'weight', 5)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Reps Control */}
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Reps</label>
-                  <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
-                    <button
-                      onClick={() => updateSet(idx, 'reps', -1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="font-mono font-semibold text-lg text-slate-100">{set.reps}</span>
-                    <button
-                      onClick={() => updateSet(idx, 'reps', 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={() => toggleComplete(0)}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  currentLog?.[0]?.completed
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+              >
+                {currentLog?.[0]?.completed ? 'Completed' : 'Mark Done'}
+                {currentLog?.[0]?.completed && <CheckCircle className="w-4 h-4" />}
+              </button>
             </motion.div>
-          ))}
+          ) : (
+            currentLog?.map((set, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.12, delay: idx * 0.04 }}
+                className={`p-4 rounded-2xl border transition-all ${
+                  set.completed
+                    ? 'bg-emerald-950 border-emerald-800'
+                    : 'bg-slate-900 border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-slate-500">SET {idx + 1}</span>
+                  <button
+                    onClick={() => toggleComplete(idx)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      set.completed
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {set.completed ? 'Completed' : 'Mark Done'}
+                    {set.completed && <CheckCircle className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Weight Control */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Lbs</label>
+                    <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
+                      <button
+                        onClick={() => updateSet(idx, 'weight', -5)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-mono font-semibold text-lg text-slate-100">{set.weight}</span>
+                      <button
+                        onClick={() => updateSet(idx, 'weight', 5)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Reps Control */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Reps</label>
+                    <div className="flex items-center justify-between bg-slate-800 rounded-xl p-1">
+                      <button
+                        onClick={() => updateSet(idx, 'reps', -1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-mono font-semibold text-lg text-slate-100">{set.reps}</span>
+                      <button
+                        onClick={() => updateSet(idx, 'reps', 1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700 text-slate-300 active:scale-95 transition-transform hover:bg-slate-600"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
 
