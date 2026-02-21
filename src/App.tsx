@@ -118,6 +118,7 @@ function StretchesModal({ onClose }: { onClose: () => void }) {
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
+        transition={{ duration: 0.2 }}
         className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
       >
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -367,9 +368,13 @@ function ActiveSession({
             />
           </div>
         </div>
-        <div className="text-xs font-mono font-medium text-slate-500">
+        <button
+          onClick={() => setCurrentExerciseIndex(prev => Math.max(0, prev - 1))}
+          disabled={currentExerciseIndex === 0}
+          className="text-xs font-mono font-medium text-slate-500 disabled:opacity-30 hover:text-slate-200 transition-colors px-1"
+        >
           {currentExerciseIndex + 1}/{day.exercises.length}
-        </div>
+        </button>
       </div>
 
       {/* Content */}
@@ -419,9 +424,9 @@ function ActiveSession({
           {currentLog?.map((set, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              transition={{ duration: 0.12, delay: idx * 0.04 }}
               className={`p-4 rounded-2xl border transition-all ${
                 set.completed
                   ? 'bg-emerald-950 border-emerald-800'
@@ -548,6 +553,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="h-full"
           >
             <ActiveSession
@@ -566,6 +572,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
             <Home onStartWorkout={handleStart} history={history} />
           </motion.div>
