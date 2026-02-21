@@ -373,7 +373,7 @@ function ActiveSession({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-32">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-32 max-w-md mx-auto w-full">
         <div className="space-y-2">
           <div className="flex items-start justify-between">
             <h2 className="text-2xl font-bold text-slate-100 leading-tight">{currentExercise.name}</h2>
@@ -491,13 +491,15 @@ function ActiveSession({
 
       {/* Footer Actions */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900 border-t border-slate-800">
-        <button
-          onClick={handleNext}
-          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-950/50 transition-all flex items-center justify-center gap-2"
-        >
-          {currentExerciseIndex === day.exercises.length - 1 ? 'Finish Workout' : 'Next Exercise'}
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        <div className="max-w-md mx-auto">
+          <button
+            onClick={handleNext}
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-950/50 transition-all flex items-center justify-center gap-2"
+          >
+            {currentExerciseIndex === day.exercises.length - 1 ? 'Finish Workout' : 'Next Exercise'}
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -538,14 +540,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 font-sans text-slate-100">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-100 overflow-x-hidden">
       <AnimatePresence mode="wait">
         {activeDay ? (
           <motion.div
             key="session"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="h-full"
           >
             <ActiveSession
@@ -561,9 +563,9 @@ export default function App() {
         ) : (
           <motion.div
             key="home"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
             <Home onStartWorkout={handleStart} history={history} />
           </motion.div>
