@@ -21,21 +21,36 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<'work' | 'rest'>('work');
 
+  const done = seconds === 0 && !isActive;
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isActive && seconds > 0) {
       interval = setInterval(() => {
         setSeconds(s => s - 1);
       }, 1000);
-    } else if (seconds === 0) {
-      setIsActive(false);
+    } else if (isActive && seconds === 0) {
+      if (type === 'interval') {
+        setMode(prev => prev === 'work' ? 'rest' : 'work');
+        setSeconds(initialSeconds);
+      } else {
+        setIsActive(false);
+      }
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, seconds]);
+  }, [isActive, seconds, type, initialSeconds]);
 
-  const toggle = () => setIsActive(!isActive);
+  const toggle = () => {
+    if (done) {
+      setSeconds(initialSeconds);
+      if (type === 'interval') setMode('work');
+      setIsActive(true);
+    } else {
+      setIsActive(!isActive);
+    }
+  };
 
   const reset = () => {
     setIsActive(false);
@@ -46,7 +61,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   const setIntervalMode = (newMode: 'work' | 'rest') => {
     setIsActive(false);
     setMode(newMode);
-    setSeconds(30);
+    setSeconds(initialSeconds);
   };
 
   const formatTime = (s: number) => {
@@ -79,7 +94,7 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
                 : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/40'
             }`}
           >
-            {isActive ? 'Pause' : 'Start'}
+            {isActive ? 'Pause' : done ? 'Restart' : 'Start'}
           </button>
           <button onClick={reset} className="p-2 text-slate-500 hover:text-white transition-colors">
             <RotateCcw className="w-5 h-5" />
@@ -414,7 +429,7 @@ function ActiveSession({
           {getLastLog(currentExercise.id) && (
             <div className="flex items-center gap-2 text-xs text-slate-500 px-1">
               <History className="w-3 h-3" />
-              Last time: {getLastLog(currentExercise.id)?.sets.map(s => `${s.weight}lb`).join(', ')}
+              Last time: {getLastLog(currentExercise.id)?.sets.map(s => `${s.weight}lb × ${s.reps}`).join(', ')}
             </div>
           )}
         </div>
