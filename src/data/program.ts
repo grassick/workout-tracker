@@ -204,10 +204,10 @@ export const PROGRAM: WorkoutDay[] = [
     exercises: [
       {
         id: 'hack-squat',
-        name: 'Hack Squat or Belt Squat',
+        name: 'Goblin Squat',
         sets: 2,
         reps: '10-12',
-        notes: 'Rotate based on knee feel. If knees flare, swap for Leg Curl volume. Hamstring stretch between sets.',
+        notes: '',
         category: 'legs',
       },
       {
