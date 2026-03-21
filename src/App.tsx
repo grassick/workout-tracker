@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PROGRAM, STRETCHES, WorkoutDay } from './data/program';
 import { useWorkoutHistory, WorkoutLog, ExerciseLog } from './hooks/useWorkoutHistory';
@@ -20,45 +20,62 @@ function Timer({ initialSeconds = 60, type = 'rest' }: { initialSeconds?: number
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<'work' | 'rest'>('work');
+  const endTimeRef = useRef<number | null>(null);
 
   const done = seconds === 0 && !isActive;
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds(s => s - 1);
-      }, 1000);
-    } else if (isActive && seconds === 0) {
+  const tick = useCallback(() => {
+    if (!endTimeRef.current) return;
+    const remaining = Math.round((endTimeRef.current - Date.now()) / 1000);
+    if (remaining > 0) {
+      setSeconds(remaining);
+    } else {
+      setSeconds(0);
+      endTimeRef.current = null;
       if (type === 'interval') {
-        setMode(prev => prev === 'work' ? 'rest' : 'work');
+        setMode(prev => {
+          const next = prev === 'work' ? 'rest' : 'work';
+          return next;
+        });
+        endTimeRef.current = Date.now() + initialSeconds * 1000;
         setSeconds(initialSeconds);
       } else {
         setIsActive(false);
       }
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isActive, seconds, type, initialSeconds]);
+  }, [type, initialSeconds]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    tick();
+    const interval = setInterval(tick, 250);
+    return () => clearInterval(interval);
+  }, [isActive, tick]);
 
   const toggle = () => {
     if (done) {
+      endTimeRef.current = Date.now() + initialSeconds * 1000;
       setSeconds(initialSeconds);
       if (type === 'interval') setMode('work');
       setIsActive(true);
+    } else if (isActive) {
+      endTimeRef.current = null;
+      setIsActive(false);
     } else {
-      setIsActive(!isActive);
+      endTimeRef.current = Date.now() + seconds * 1000;
+      setIsActive(true);
     }
   };
 
   const reset = () => {
+    endTimeRef.current = null;
     setIsActive(false);
     setSeconds(initialSeconds);
     setMode('work');
   };
 
   const setIntervalMode = (newMode: 'work' | 'rest') => {
+    endTimeRef.current = null;
     setIsActive(false);
     setMode(newMode);
     setSeconds(initialSeconds);
