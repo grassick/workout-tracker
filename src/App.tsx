@@ -381,6 +381,14 @@ function ActiveSession({
     }
   };
 
+  const handleBack = () => {
+    if (currentExerciseIndex > 0) {
+      setCurrentExerciseIndex(prev => prev - 1);
+    } else {
+      onCancel();
+    }
+  };
+
   const progress = (currentExerciseIndex / day.exercises.length) * 100;
   const currentLog = logs[currentExercise.id];
 
@@ -388,7 +396,11 @@ function ActiveSession({
     <div className="flex flex-col h-screen bg-slate-950">
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <button onClick={onCancel} className="p-2 -ml-2 text-slate-500 hover:text-slate-200 transition-colors">
+        <button
+          onClick={handleBack}
+          aria-label={currentExerciseIndex > 0 ? 'Previous exercise' : 'Back to home'}
+          className="p-2 -ml-2 text-slate-500 hover:text-slate-200 transition-colors"
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 mx-4">

@@ -85,11 +85,11 @@ export const PROGRAM: WorkoutDay[] = [
     focus: 'Legs (Quad/Hamstring)',
     exercises: [
       {
-        id: 'leg-press',
-        name: 'Leg Press',
+        id: 'belt-or-goblet-squat',
+        name: 'Belt Squat or Goblet Squat',
         sets: 2,
         reps: '10-12',
-        notes: 'High foot placement for glutes/hams. Controlled. Hamstring stretch between sets.',
+        notes: 'Keep torso upright. Choose a pain-free depth and skip if the right hip pinches.',
         category: 'legs',
       },
       {
@@ -172,11 +172,11 @@ export const PROGRAM: WorkoutDay[] = [
         category: 'pull',
       },
       {
-        id: 'overhead-tricep',
-        name: 'Overhead Tricep Extension',
+        id: 'tricep-pushdown',
+        name: 'Tricep Pushdown',
         sets: 3,
         reps: '12-15',
-        notes: 'Cable or DB. Stretch triceps at bottom.',
+        notes: 'Keep elbows pinned to sides.',
         category: 'push',
       },
       {
