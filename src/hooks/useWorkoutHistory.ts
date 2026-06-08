@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { collection, doc, getDocs, orderBy, query, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export type ExerciseLog = {
   exerciseId: string;
@@ -19,28 +21,42 @@ export type WorkoutLog = {
 type SetDefault = { weight: number; reps: number };
 type ExerciseDefaults = Record<string, SetDefault[]>;
 
-const HISTORY_KEY = 'workout_history';
-const DEFAULTS_KEY = 'exercise_defaults';
-
-export function useWorkoutHistory() {
+export function useWorkoutHistory(uid: string) {
   const [history, setHistory] = useState<WorkoutLog[]>([]);
   const [exerciseDefaults, setExerciseDefaults] = useState<ExerciseDefaults>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem(HISTORY_KEY);
-    if (stored) {
-      setHistory(JSON.parse(stored));
-    }
-    const defaults = localStorage.getItem(DEFAULTS_KEY);
-    if (defaults) {
-      setExerciseDefaults(JSON.parse(defaults));
-    }
-  }, []);
+    let cancelled = false;
+    setLoading(true);
 
-  const saveWorkout = (log: WorkoutLog) => {
-    const newHistory = [log, ...history];
-    setHistory(newHistory);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
+    const load = async () => {
+      const workoutsSnap = await getDocs(
+        query(collection(db, 'users', uid, 'workouts'), orderBy('date', 'desc'))
+      );
+      const defaultsSnap = await getDocs(collection(db, 'users', uid, 'exerciseDefaults'));
+      if (cancelled) return;
+
+      setHistory(workoutsSnap.docs.map((d) => d.data() as WorkoutLog));
+
+      const defaults: ExerciseDefaults = {};
+      defaultsSnap.forEach((d) => {
+        defaults[d.id] = (d.data().sets as SetDefault[]) ?? [];
+      });
+      setExerciseDefaults(defaults);
+      setLoading(false);
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  const saveWorkout = async (log: WorkoutLog) => {
+    // Optimistic local update keeps the UI instant; Firestore write follows.
+    setHistory((prev) => [log, ...prev]);
+    await setDoc(doc(db, 'users', uid, 'workouts', log.id), log);
   };
 
   const getLastLogForExercise = (exerciseId: string): ExerciseLog | null => {
@@ -56,14 +72,15 @@ export function useWorkoutHistory() {
   };
 
   const saveExerciseDefault = (exerciseId: string, setIndex: number, weight: number, reps: number) => {
-    setExerciseDefaults(prev => {
+    setExerciseDefaults((prev) => {
       const current = prev[exerciseId] ? [...prev[exerciseId]] : [];
       current[setIndex] = { weight, reps };
       const updated = { ...prev, [exerciseId]: current };
-      localStorage.setItem(DEFAULTS_KEY, JSON.stringify(updated));
+      // Fire-and-forget: persist the per-exercise doc.
+      setDoc(doc(db, 'users', uid, 'exerciseDefaults', exerciseId), { sets: current }, { merge: true });
       return updated;
     });
   };
 
-  return { history, saveWorkout, getLastLogForExercise, getExerciseDefaults, saveExerciseDefault };
+  return { history, loading, saveWorkout, getLastLogForExercise, getExerciseDefaults, saveExerciseDefault };
 }

@@ -2,7 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PROGRAM, STRETCHES, WorkoutDay } from './data/program';
 import { useWorkoutHistory, WorkoutLog, ExerciseLog } from './hooks/useWorkoutHistory';
-import { Play, ChevronRight, Info, CheckCircle, RotateCcw, History, ArrowLeft, Plus, Minus, Dumbbell, Timer as TimerIcon, X } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
+import { LoginScreen } from './components/LoginScreen';
+import { ProgressView } from './components/ProgressView';
+import { Play, ChevronRight, Info, CheckCircle, RotateCcw, History, ArrowLeft, Plus, Minus, Dumbbell, Timer as TimerIcon, X, TrendingUp, LogOut } from 'lucide-react';
 
 const SESSION_KEY = 'active_session';
 
@@ -204,9 +207,13 @@ function StretchesModal({ onClose }: { onClose: () => void }) {
 
 function Home({
   onStartWorkout,
+  onViewProgress,
+  onSignOut,
   history
 }: {
   onStartWorkout: (day: WorkoutDay) => void,
+  onViewProgress: () => void,
+  onSignOut: () => void,
   history: WorkoutLog[]
 }) {
   const [showStretches, setShowStretches] = useState(false);
@@ -221,7 +228,16 @@ function Home({
   return (
     <div className="max-w-md mx-auto p-6 space-y-8 pb-24">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-100">My Gym Tracker</h1>
+        <div className="flex items-start justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-100">My Gym Tracker</h1>
+          <button
+            onClick={onSignOut}
+            title="Sign out"
+            className="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
         <p className="text-slate-400">{getGreeting()}</p>
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-xl text-white shadow-lg mt-4">
           <p className="font-medium text-sm opacity-90">"Consistency is the key to progress. Even a small step forward is still a step."</p>
@@ -278,6 +294,14 @@ function Home({
           </div>
         )}
       </section>
+
+      <button
+        onClick={onViewProgress}
+        className="w-full py-3 bg-slate-900 border border-slate-700 text-slate-300 font-medium rounded-xl shadow-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+      >
+        <TrendingUp className="w-5 h-5 text-indigo-400" />
+        View Progress / 1RM Trends
+      </button>
 
       <button
         onClick={() => setShowStretches(true)}
@@ -580,9 +604,32 @@ function ActiveSession({
 }
 
 export default function App() {
-  const { history, saveWorkout, getLastLogForExercise, getExerciseDefaults, saveExerciseDefault } = useWorkoutHistory();
+  const { user, authLoading, signIn, signOut } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 font-sans text-slate-100">
+        <LoginScreen onSignIn={signIn} />
+      </div>
+    );
+  }
+
+  return <AuthedApp uid={user.uid} onSignOut={signOut} />;
+}
+
+function AuthedApp({ uid, onSignOut }: { uid: string; onSignOut: () => void }) {
+  const { history, saveWorkout, getLastLogForExercise, getExerciseDefaults, saveExerciseDefault } = useWorkoutHistory(uid);
   const [activeDay, setActiveDay] = useState<WorkoutDay | null>(null);
   const [savedSession, setSavedSession] = useState<SessionState | null>(null);
+  const [view, setView] = useState<'home' | 'progress'>('home');
 
   // On mount, restore any in-progress session
   useEffect(() => {
@@ -635,6 +682,16 @@ export default function App() {
               saveExerciseDefault={saveExerciseDefault}
             />
           </motion.div>
+        ) : view === 'progress' ? (
+          <motion.div
+            key="progress"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <ProgressView history={history} onBack={() => setView('home')} />
+          </motion.div>
         ) : (
           <motion.div
             key="home"
@@ -643,7 +700,12 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            <Home onStartWorkout={handleStart} history={history} />
+            <Home
+              onStartWorkout={handleStart}
+              onViewProgress={() => setView('progress')}
+              onSignOut={onSignOut}
+              history={history}
+            />
           </motion.div>
         )}
       </AnimatePresence>
